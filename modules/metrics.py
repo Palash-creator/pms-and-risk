@@ -107,8 +107,12 @@ def _safe_div(numerator: float, denominator: float) -> float:
 def _ulcer_index(drawdown: pd.Series) -> float:
     if drawdown.empty:
         return np.nan
-    squared = np.square(drawdown.clip(upper=0))
-    return math.sqrt(np.mean(-squared))
+    clipped = drawdown.clip(upper=0).dropna()
+    if clipped.empty:
+        return np.nan
+    squared = np.square(clipped)
+    mean_squared = float(np.mean(squared))
+    return math.sqrt(mean_squared) if mean_squared >= 0 else np.nan
 
 
 def _capm_alpha_beta(portfolio: pd.Series, benchmark: pd.Series) -> tuple[float, float]:
